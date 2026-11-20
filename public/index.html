@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>my AI Chatbot</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" href="data:,">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+<body>
+
+    <div class="card" id="auth-screen">
+        <h2>Welcome to  my AI </h2>
+        <p>Login or register to start chatting with my AI.</p>
+        <input type="text" id="username" placeholder="Username" />
+<input type="password" id="password" placeholder="Password" />
+<button type="button" onclick="handleRegister()">Register</button>
+<button type="button" onclick="handleLogin()">Login</button>
+
+        <p id="auth-error" style="color: #ef4444; font-size: 14px;"></p>
+    </div>
+
+    <div class="card hidden" id="chat-screen" style="width: 500px;">
+        <h2>Chat Dashboard (<span id="current-user"></span>)</h2>
+        <div id="chat-box"></div>
+        <input type="text" id="messageInput" placeholder="Type a message...">
+        <button type="button" onclick="submitChatMessage()">Send Message</button>
+    </div>
+
+  <script>
+    async function handleRegister() {
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+
+        if (!username || !password) {
+            alert('Please fill in both fields.');
+            return;
+        }
+
+        try {
+            const response = await fetch('/api/auth/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+            });
+
+            const data = await response.json();
+            if (response.ok) {
+                alert('Registration successful! You can now log in.');
+            } else {
+                alert(data.error || 'Registration failed');
+            }
+        } catch (err) {
+            console.error(err);
+            alert('Network error during registration.');
+        }
+    }
+
+    async function handleLogin() {
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+
+        if (!username || !password) {
+            alert('Please fill in both fields.');
+            return;
+        }
+
+        try {
+            const response = await fetch('/api/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+            });
+
+            const data = await response.json();
+            if (response.ok) {
+                localStorage.setItem('token', data.token);
+                
+              // Inside your handleLogin function:
+const authScreen = document.getElementById('auth-screen');
+const chatScreen = document.getElementById('chat-screen');
+
+// Use classList to switch views cleanly
+authScreen.classList.add('hidden');
+chatScreen.classList.remove('hidden');
+
+const currentUser = document.getElementById('current-user');
+if (currentUser) currentUser.innerText = username;
+            } else {
+                alert(data.error || 'Login failed');
+            }
+        } catch (err) {
+            console.error(err);
+            alert('Network error during login.');
+        }
+    }
+
+    async function sendMessage() {
+    const messageInput = document.getElementById('messageInput'); // or whatever your input ID is
+    const message = messageInput.value.trim();
+    if (!message) return;
+
+    try {
+        const res = await fetch('/api/chat/send', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            },
+            body: JSON.stringify({ message })
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+            // This will catch the backend error and show it in your UI or console instead of staying silent!
+            throw new Error(data.error || 'Server error occurred');
+        }
+
+        appendMessage(message, 'user');
+appendMessage(data.reply, 'ai');
+messageInput.value = '';
+
+    } catch (err) {
+        console.error('Chat Error:', err);
+        alert('Error: ' + err.message); // Shows the exact error (like high demand) on screen
+    }
+}
+    function appendMessage(text, sender) {
+        const chatBox = document.getElementById('chat-box');
+        if (!chatBox) return;
+        
+        const messageDiv = document.createElement('div');
+        messageDiv.style.margin = '10px 0';
+        messageDiv.style.padding = '8px 12px';
+        messageDiv.style.borderRadius = '8px';
+        
+        if (sender === 'user') {
+            messageDiv.style.background = '#2563eb';
+            messageDiv.style.color = '#fff';
+            messageDiv.style.textAlign = 'right';
+        } else {
+            messageDiv.style.background = '#374151';
+            messageDiv.style.color = '#fff';
+            messageDiv.style.textAlign = 'left';
+        }
+        
+        if (sender === 'ai') {
+    messageDiv.innerHTML = marked.parse(text);
+} else {
+    messageDiv.textContent = text;
+}
+        chatBox.appendChild(messageDiv);
+        chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    async function submitChatMessage() {
+        const messageInput = document.getElementById('messageInput');
+        const message = messageInput.value.trim();
+        if (!message) return;
+
+        const token = localStorage.getItem('token');
+        if (!token) {
+            alert('Please log in again to send a message.');
+            return;
+        }
+
+        try {
+            const response = await fetch('/api/chat/send', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + token
+                },
+                body: JSON.stringify({ message })
+            });
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.error || 'Server error occurred');
+
+            appendMessage(message, 'user');
+            appendMessage(data.reply, 'ai');
+            messageInput.value = '';
+        } catch (error) {
+            console.error('Chat Error:', error);
+            alert('Error: ' + error.message);
+        }
+    }
+    // Press Enter to send message
+   const chatInput = document.getElementById('messageInput');
+    if (chatInput) {
+        chatInput.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                submitChatMessage(); // matches the function name seen in your browser console
+            }
+        });
+    }
+
+</script>
+</body>
+</html>

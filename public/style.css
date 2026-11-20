@@ -1,0 +1,11 @@
+/* public/style.css */
+body { font-family: Arial, sans-serif; background: #0f172a; color: #f8fafc; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+.card { background: #1e293b; padding: 2rem; border-radius: 12px; width: 400px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
+input, button { width: 100%; padding: 10px; margin-top: 10px; border-radius: 6px; border: 1px solid #475569; background: #334155; color: #fff; box-sizing: border-box; }
+button { background: #3b82f6; border: none; cursor: pointer; font-weight: bold; }
+button:hover { background: #2563eb; }
+#chat-box { height: 300px; overflow-y: auto; background: #0f172a; padding: 10px; border-radius: 6px; margin-bottom: 10px; display: flex; flex-direction: column; gap: 8px; }
+.msg { padding: 8px 12px; border-radius: 6px; max-width: 80%; }
+.user { background: #3b82f6; align-self: flex-end; }
+.ai { background: #475569; align-self: flex-start; }
+.hidden { display: none; }
