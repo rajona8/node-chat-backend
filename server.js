@@ -19,7 +19,7 @@ const users = [];
 const chatHistories = {};
 
 async function generateWithFallback(history) {
-    const models = ['gemini-3.5-flash-lite', 'gemini-3.8-flash'];
+   const models = ['gemini-3.5-flash-lite', 'gemini-3.8-flash'];
     let lastError;
 
     for (const model of models) {
@@ -32,7 +32,7 @@ async function generateWithFallback(history) {
                         "You are an insightful, engaging, and knowledgeable AI companion. " +
                         "You can discuss any topic in depth—science, coding, history, sports, everyday advice, or creative ideas. " +
                         "Be conversational, clear, and naturally curious, using formatting like bullet points or code blocks when helpful.",
-                    tools: [{ googleSearch: {} }],
+                   // tools: [{ googleSearch: {} }],
                 },
             });
 
