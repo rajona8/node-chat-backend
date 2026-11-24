@@ -14,8 +14,21 @@ app.use(express.static('public')); // Serves your frontend f
 const ai = new GoogleGenAI();
 
 
-const users = [];
-// Store conversation history per user in memory (above your routes)
+const { Pool } = require('pg');
+
+const pool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+    ssl: { rejectUnauthorized: false }
+});
+
+pool.query(`
+    CREATE TABLE IF NOT EXISTS users (
+        id SERIAL PRIMARY KEY,
+        username TEXT UNIQUE NOT NULL,
+        password TEXT NOT NULL
+    );
+`).then(() => console.log('Connected to PostgreSQL'))
+  .catch(err => console.error('Database connection error:', err));
 const chatHistories = {};
 
 async function generateWithFallback(history) {
@@ -58,21 +71,21 @@ async function generateWithFallback(history) {
 app.post('/api/auth/register', async (req, res) => {
     try {
         const { username, password } = req.body;
-        if (!username || !password) {
-            return res.status(400).json({ error: 'Username and password are required' });
-        }
 
-        const existingUser = users.find(u => u.username === username);
-        if (existingUser) {
-            return res.status(400).json({ error: 'Username already taken' });
+        const existing = await pool.query('SELECT * FROM users WHERE username = $1', [username]);
+        if (existing.rows.length > 0) {
+            return res.status(400).json({ error: 'Username already exists' });
         }
 
         const hashedPassword = await bcrypt.hash(password, 10);
-        users.push({ username, password: hashedPassword });
+        await pool.query(
+            'INSERT INTO users (username, password) VALUES ($1, $2)',
+            [username, hashedPassword]
+        );
 
         res.status(201).json({ message: 'User registered successfully' });
     } catch (err) {
-        console.error('Registration Error:', err);
+        console.error('Register Error:', err);
         res.status(500).json({ error: 'Internal server error during registration' });
     }
 });
@@ -81,7 +94,9 @@ app.post('/api/auth/register', async (req, res) => {
 app.post('/api/auth/login', async (req, res) => {
     try {
         const { username, password } = req.body;
-        const user = users.find(u => u.username === username);
+        const result = await pool.query('SELECT * FROM users WHERE username = $1', [username]);
+        const user = result.rows[0];
+
         if (!user) {
             return res.status(400).json({ error: 'Invalid username or password' });
         }
