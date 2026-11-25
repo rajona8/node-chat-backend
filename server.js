@@ -127,7 +127,13 @@ function verifyToken(req, res, next) {
         next();
     });
 }
-
+app.post('/clear', verifyToken, (req, res) => {
+    const username = req.user.username;
+    if (chatHistories[username]) {
+        chatHistories[username] = [];
+    }
+    res.json({ message: 'Chat cleared' });
+});
 app.post('/api/chat/send', verifyToken, async (req, res) => {
     try {
         const { message } = req.body;

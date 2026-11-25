@@ -9,25 +9,34 @@
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
 <body>
-
+    <!-- Login / Register Screen (visible first) -->
     <div class="card" id="auth-screen">
-        <h2>Welcome to  my AI </h2>
+        <h2>Welcome to my AI</h2>
         <p>Login or register to start chatting with my AI.</p>
         <input type="text" id="username" placeholder="Username" />
-<input type="password" id="password" placeholder="Password" />
-<button type="button" onclick="handleRegister()">Register</button>
+        <input type="password" id="password" placeholder="Password" />
+        <button type="button" onclick="handleRegister()">Register</button>
 <button type="button" onclick="handleLogin()">Login</button>
-
-        <p id="auth-error" style="color: #ef4444; font-size: 14px;"></p>
+        <p id="auth-error" style="color: #f87171; margin: 0;"></p>
     </div>
 
-    <div class="card hidden" id="chat-screen" style="width: 500px;">
-        <h2>Chat Dashboard (<span id="current-user"></span>)</h2>
+    <!-- Chat Screen (hidden until logged in) -->
+    <div class="card hidden" id="chat-screen">
+        <div class="chat-top-bar">
+            <div class="chat-title-group">
+                <span class="gemini-spark">✦</span>
+                <h2>Chat Dashboard (<span id="current-user"></span>)</h2>
+            </div>
+            <button type="button" id="clear-btn" onclick="clearChat()">Clear Chat</button>
+        </div>
+
         <div id="chat-box"></div>
-        <input type="text" id="messageInput" placeholder="Type a message...">
-        <button type="button" onclick="submitChatMessage()">Send Message</button>
-    </div>
 
+        <div class="composer-bar">
+            <input type="text" id="messageInput" placeholder="Ask anything..." />
+            <button type="button" id="send-btn" onclick="submitChatMessage()">Send</button>
+        </div>
+    </div>
   <script>
     async function handleRegister() {
         const username = document.getElementById('username').value;
@@ -186,6 +195,20 @@ messageInput.value = '';
             alert('Error: ' + error.message);
         }
     }
+    async function clearChat() {
+    const token = localStorage.getItem('token');
+    try {
+        const res = await fetch('/clear', {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.ok) {
+            document.getElementById('chat-box').innerHTML = '';
+        }
+    } catch (err) {
+        console.error('Failed to clear chat:', err);
+    }
+}
     // Press Enter to send message
    const chatInput = document.getElementById('messageInput');
     if (chatInput) {

@@ -1,11 +1,322 @@
-/* public/style.css */
-body { font-family: Arial, sans-serif; background: #0f172a; color: #f8fafc; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-.card { background: #1e293b; padding: 2rem; border-radius: 12px; width: 400px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
-input, button { width: 100%; padding: 10px; margin-top: 10px; border-radius: 6px; border: 1px solid #475569; background: #334155; color: #fff; box-sizing: border-box; }
-button { background: #3b82f6; border: none; cursor: pointer; font-weight: bold; }
-button:hover { background: #2563eb; }
-#chat-box { height: 300px; overflow-y: auto; background: #0f172a; padding: 10px; border-radius: 6px; margin-bottom: 10px; display: flex; flex-direction: column; gap: 8px; }
-.msg { padding: 8px 12px; border-radius: 6px; max-width: 80%; }
-.user { background: #3b82f6; align-self: flex-end; }
-.ai { background: #475569; align-self: flex-start; }
-.hidden { display: none; }
+/* Base page & dark atmospheric background */
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: radial-gradient(circle at top, #172554 0%, #090d16 60%, #05080f 100%);
+    color: #f1f5f9;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 16px;
+}
+
+/* Utility class to hide inactive screens */
+.hidden {
+    display: none !important;
+}
+
+/* Card container used by #auth-screen */
+.card {
+    width: 100%;
+    max-width: 440px;
+    background: rgba(15, 23, 42, 0.88);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(148, 163, 184, 0.16);
+    border-radius: 20px;
+    padding: 28px;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.card h2 {
+    margin: 0 0 4px;
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: #f8fafc;
+}
+
+.card p {
+    margin: 0 0 8px;
+    color: #94a3b8;
+    font-size: 0.95rem;
+}
+
+/* Inputs inside .card (username, password) */
+.card input {
+    width: 100%;
+    padding: 12px 14px;
+    border-radius: 10px;
+    border: 1px solid rgba(148, 163, 184, 0.22);
+    background: rgba(30, 41, 59, 0.75);
+    color: #f8fafc;
+    font-size: 0.95rem;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+}
+
+.card input:focus {
+    border-color: #3b82f6;
+    background: rgba(30, 41, 59, 0.95);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.22);
+}
+
+.card input::placeholder {
+    color: #94a3b8;
+}
+
+/* Primary buttons inside .card */
+.card button {
+    width: 100%;
+    padding: 12px 16px;
+    border: none;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    color: #ffffff;
+    font-size: 0.96rem;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 6px 18px rgba(37, 99, 235, 0.28);
+    transition: filter 0.2s ease, transform 0.12s ease, box-shadow 0.2s ease;
+}
+
+.card button:hover {
+    filter: brightness(1.08);
+    box-shadow: 0 8px 22px rgba(37, 99, 235, 0.38);
+}
+
+.card button:active {
+    transform: scale(0.99);
+}
+
+/* Gemini-style chat workspace */
+#chat-screen {
+    max-width: 820px;
+    width: 100% !important;
+    height: 86vh;
+    max-height: 820px;
+    padding: 0;
+    gap: 0;
+    background: rgba(13, 17, 26, 0.94);
+    border: 1px solid rgba(148, 163, 184, 0.14);
+    border-radius: 24px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Top header bar with title on left & Clear Chat pill on right */
+.chat-top-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 16px 24px;
+    background: rgba(20, 27, 41, 0.85);
+    border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+}
+
+.chat-title-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.gemini-spark {
+    font-size: 1.2rem;
+    background: linear-gradient(135deg, #60a5fa, #a855f7, #ec4899);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.chat-top-bar h2 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #f8fafc;
+}
+
+/* Compact Clear Chat button inside top bar */
+#chat-screen #clear-btn {
+    width: auto;
+    padding: 7px 14px;
+    font-size: 0.84rem;
+    font-weight: 500;
+    border-radius: 999px;
+    background: rgba(30, 41, 59, 0.9);
+    color: #cbd5e1;
+    border: 1px solid rgba(148, 163, 184, 0.22);
+    box-shadow: none;
+}
+
+#chat-screen #clear-btn:hover {
+    background: rgba(239, 68, 68, 0.18);
+    border-color: rgba(248, 113, 113, 0.5);
+    color: #fca5a5;
+}
+
+/* Full-height scrollable message stream */
+.chat-box,
+#chat-screen #chat-box,
+#chat-box {
+    flex: 1;
+    height: auto;
+    min-height: 0;
+    max-height: none;
+    padding: 24px;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    scroll-behavior: smooth;
+}
+
+/* Subtle custom scrollbar */
+.chat-box::-webkit-scrollbar,
+#chat-box::-webkit-scrollbar {
+    width: 6px;
+}
+
+.chat-box::-webkit-scrollbar-track,
+#chat-box::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.chat-box::-webkit-scrollbar-thumb,
+#chat-box::-webkit-scrollbar-thumb {
+    background: rgba(148, 163, 184, 0.25);
+    border-radius: 999px;
+}
+
+.chat-box::-webkit-scrollbar-thumb:hover,
+#chat-box::-webkit-scrollbar-thumb:hover {
+    background: rgba(148, 163, 184, 0.45);
+}
+
+/* Message bubble entrance animation */
+@keyframes bubbleIn {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Base message bubble */
+.message,
+.msg {
+    max-width: 78%;
+    padding: 12px 16px;
+    line-height: 1.5;
+    font-size: 0.96rem;
+    word-wrap: break-word;
+    animation: bubbleIn 0.18s ease-out;
+}
+
+/* User bubble (right-aligned blue gradient) */
+.message.user,
+.msg.user,
+.user-message {
+    align-self: flex-end;
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    color: #ffffff;
+    border-radius: 18px 18px 4px 18px;
+    box-shadow: 0 6px 18px rgba(37, 99, 235, 0.28);
+}
+
+/* AI bubble (left-aligned slate card) */
+.message.bot,
+.message.ai,
+.msg.bot,
+.msg.ai,
+.ai-message,
+.bot-message {
+    align-self: flex-start;
+    background: rgba(30, 41, 59, 0.92);
+    color: #e2e8f0;
+    border: 1px solid rgba(148, 163, 184, 0.14);
+    border-radius: 18px 18px 18px 4px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.22);
+}
+
+/* Code blocks & inline code inside AI markdown replies */
+.message pre,
+.msg pre,
+#chat-box pre {
+    background: #05080f;
+    border: 1px solid rgba(148, 163, 184, 0.18);
+    border-radius: 10px;
+    padding: 12px;
+    overflow-x: auto;
+    margin: 8px 0 0;
+}
+
+.message code,
+.msg code,
+#chat-box code {
+    font-family: Consolas, 'Courier New', monospace;
+    font-size: 0.88em;
+}
+
+/* Bottom floating-style composer bar */
+.composer-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 20px 20px;
+    background: rgba(13, 17, 26, 0.96);
+    border-top: 1px solid rgba(148, 163, 184, 0.1);
+}
+
+#chat-screen #messageInput {
+    flex: 1;
+    width: auto;
+    padding: 14px 20px;
+    border-radius: 999px;
+    background: #1e293b;
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    color: #f8fafc;
+    font-size: 0.96rem;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+}
+
+#chat-screen #messageInput:focus {
+    border-color: #60a5fa;
+    background: #243247;
+    box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.18);
+}
+
+#chat-screen #messageInput::placeholder {
+    color: #94a3b8;
+}
+
+#chat-screen #send-btn {
+    width: auto;
+    padding: 13px 22px;
+    border-radius: 999px;
+    background: linear-gradient(135deg, #3b82f6, #6366f1);
+    color: #ffffff;
+    font-size: 0.92rem;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+#chat-screen #send-btn:hover {
+    filter: brightness(1.08);
+}
